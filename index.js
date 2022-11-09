@@ -17,22 +17,16 @@ async function run() {
         const servicesCollection = client.db("smiley-dental-services").collection("services");
         const reviewsCollection = client.db("smiley-dental-services").collection("reviews");
 
-        app.post('/services', async (req, res) => {
-            const service = {
-                name: "Dental Crown",
-                img: "https://i.ibb.co/qgZMHC5/dental-crown.jpg",
-                cost: 500,
-                description: "A dental crown is a dental prosthesis which replaces the visible part of a tooth. A dental crown functions to strengthen teeth, restore their original shape, and improve their appearance. Dental crowns are also used to hold dental bridges in place and cover dental implants.",
-                rating: 4.4
-            }
-
+        app.post('/add-service', async (req, res) => {
+            const service = req.body;
             const result = await servicesCollection.insertOne(service);
-            console.log(result);
+            res.send(result);
         })
 
         app.get('/services-3', async (req, res) => {
             const query = {};
-            const cursor = servicesCollection.find(query).limit(3);
+            const options = { sort: { _id: -1 } };
+            const cursor = servicesCollection.find(query, options).limit(3);
             const result = await cursor.toArray();
             res.send(result);
         })
@@ -73,7 +67,6 @@ async function run() {
             const options = { sort: { dateTime: -1 } };
             const cursor = reviewsCollection.find(query, options);
             const result = await cursor.toArray();
-            console.log(result)
             res.send(result);
         })
 
@@ -81,6 +74,15 @@ async function run() {
             const id = req.query.id;
             const query = { _id: ObjectId(id) };
             const result = await reviewsCollection.deleteOne(query);
+            res.send(result);
+        })
+
+        app.patch('/update-review/:id', async (req, res) => {
+            const id = req.params.id;
+            const review = req.body;
+            const filter = { _id: ObjectId(id) };
+            const updateReview = { $set: review }
+            const result = await reviewsCollection.updateOne(filter, updateReview)
             res.send(result);
         })
 
