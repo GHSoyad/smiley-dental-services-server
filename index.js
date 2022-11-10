@@ -4,6 +4,7 @@ const port = process.env.PORT || 5000;
 const cors = require('cors');
 require('dotenv').config();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const jwt = require('jsonwebtoken');
 
 //Middlewares
 app.use(cors());
@@ -16,6 +17,12 @@ async function run() {
     try {
         const servicesCollection = client.db("smiley-dental-services").collection("services");
         const reviewsCollection = client.db("smiley-dental-services").collection("reviews");
+
+        app.post('/jwt', (req, res) => {
+            const user = req.body;
+            const token = jwt.sign(user, process.env.ACCESS_TOKEN, { expiresIn: '1h' });
+            res.send({ token });
+        })
 
         app.post('/add-service', async (req, res) => {
             const service = req.body;
